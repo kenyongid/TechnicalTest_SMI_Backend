@@ -73,6 +73,9 @@ const apiClient = {
   post: (path, body, token) =>
     request(path, { method: 'POST', body: JSON.stringify(body) }, token),
 
+  put: (path, body, token) =>
+    request(path, { method: 'PUT', body: JSON.stringify(body) }, token),
+
   delete: (path, token) => request(path, { method: 'DELETE' }, token),
 };
 
