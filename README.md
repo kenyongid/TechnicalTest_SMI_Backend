@@ -1,167 +1,147 @@
 # ProductHub
 
-Aplikasi katalog produk sederhana yang dibangun sebagai coding test **Front-End Engineer**.
+Aplikasi katalog produk yang dibuat untuk coding test **Front-End Engineer** di SMI.
 
-Pengguna harus login terlebih dahulu sebelum dapat mengakses katalog produk yang diambil dari [DummyJSON API](https://dummyjson.com).
-
----
-
-## Demo
-
-| Field    | Value                  |
-|----------|------------------------|
-| Email    | `demo@producthub.test` |
-| Password | `Demo@1234`            |
+Idenya sederhana: pengguna login dulu, lalu bisa menjelajahi ratusan produk dari berbagai kategori — bisa dicari, difilter, dan dilihat detailnya.
 
 ---
 
-## Cara Menjalankan
+## Coba langsung
 
-Hanya memerlukan Node.js. **Tidak perlu backend atau database.**
+Cukup jalankan satu perintah, tidak perlu setup database atau backend.
 
 ```bash
-# 1. Clone repository
 git clone <url-repo>
 cd producthub
-
-# 2. Install dependency
 npm install
-
-# 3. Jalankan dev server
 npm run dev
-
-# 4. Buka di browser
-# http://localhost:5173
 ```
 
-### Build untuk production
+Buka **http://localhost:5173**, lalu login dengan:
+
+| | |
+|---|---|
+| Email | `demo@producthub.test` |
+| Password | `Demo@1234` |
+
+---
+
+## Apa saja yang bisa dilakukan
+
+- **Login** — ada validasi di frontend, pesan error yang jelas, dan loading state saat proses masuk
+- **Katalog produk** — grid responsif, 20 produk per halaman, diambil langsung dari DummyJSON
+- **Cari produk** — ketik nama produk, hasil muncul otomatis (debounced, tidak spam request)
+- **Filter kategori** — pilih dari daftar kategori nyata yang diambil dari API
+- **Detail produk** — klik kartu mana saja untuk lihat modal dengan gambar besar, deskripsi, rating, dan info stok
+- **Paginasi** — navigasi antar halaman dengan smooth scroll ke atas
+- **Logout** — keluar dari sesi, kembali ke halaman login
+
+---
+
+## Tumpukan teknologi
+
+| Teknologi | Untuk apa |
+|---|---|
+| React 19 | Framework utama |
+| Vite 8 | Build tool — cepat, ringan |
+| React Router DOM | Routing SPA (login / dashboard / 404) |
+| CSS + CSS Variables | Styling dari nol, tanpa UI framework |
+| Fetch API | HTTP request ke DummyJSON, bawaan browser |
+| ESLint | Menjaga konsistensi kode |
+
+Sengaja tidak pakai Axios, Redux, atau UI library besar — bukan karena tidak tahu, tapi memang tidak diperlukan untuk skala aplikasi ini.
+
+---
+
+## Struktur folder
+
+```
+producthub/
+├── backend/              ← Laravel backend (opsional, lihat bawah)
+├── src/
+│   ├── components/       ← Komponen UI yang bisa dipakai ulang
+│   │   ├── Navbar.jsx
+│   │   ├── ProductCard.jsx
+│   │   ├── ProductGrid.jsx
+│   │   ├── ProductModal.jsx
+│   │   ├── ProtectedRoute.jsx
+│   │   ├── SearchBar.jsx
+│   │   └── StatusMessage.jsx
+│   ├── contexts/
+│   │   └── AuthContext.jsx   ← State login global (token, user, login, logout)
+│   ├── hooks/
+│   │   └── useProducts.js    ← Semua logika fetch produk ada di sini
+│   ├── layouts/
+│   │   └── DashboardLayout.jsx
+│   ├── pages/
+│   │   ├── LoginPage.jsx
+│   │   ├── DashboardPage.jsx
+│   │   └── NotFoundPage.jsx
+│   ├── services/
+│   │   ├── apiClient.js      ← Wrapper Fetch API
+│   │   ├── authService.js    ← Fungsi login dan logout
+│   │   └── productService.js ← Semua panggilan ke DummyJSON
+│   └── utils/
+│       └── formatCurrency.js ← Format harga ke USD
+```
+
+### Kenapa dipisah seperti ini?
+
+Karena satu komponen seharusnya punya satu tanggung jawab. `ProductCard` tidak perlu tahu cara memanggil API. `DashboardPage` tidak perlu tahu bagaimana format harga. Kalau nanti ada yang harus diubah, tinggal cari di tempat yang tepat.
+
+---
+
+## Alur login
+
+1. User isi form → validasi sederhana di frontend (field kosong, format email)
+2. `authService.login()` dipanggil
+3. Kalau backend Laravel tersedia di `localhost:8000` → login via API, token dari server
+4. Kalau backend tidak jalan → fallback ke validasi lokal dengan akun demo
+5. Token disimpan di React Context (in-memory) — sengaja tidak ke `localStorage`
+6. Halaman redirect ke dashboard
+
+Refresh halaman = logout. Ini disengaja karena brief minta jangan simpan token di localStorage.
+
+---
+
+## API yang dipakai dari DummyJSON
+
+```
+GET /products?limit=20&skip=N          → daftar produk + paginasi
+GET /products/search?q=...             → cari produk
+GET /products/categories               → daftar kategori
+GET /products/category/:slug           → produk per kategori
+```
+
+Semua data yang ditampilkan berasal dari API — tidak ada data palsu yang dikarang.
+
+---
+
+## Backend Laravel (opsional)
+
+Folder `backend/` berisi Laravel 10 + Sanctum untuk autentikasi nyata dengan MySQL.
+Kalau mau dijalankan:
 
 ```bash
-npm run build
-npm run preview
+cd backend
+composer install
+cp .env.example .env
+# Edit .env: isi DB_PASSWORD
+
+php artisan key:generate
+mysql -u root -e "CREATE DATABASE producthub;"
+php artisan migrate
+php artisan db:seed
+php artisan serve
 ```
 
----
-
-## Fitur
-
-- **Login** — validasi frontend dengan kredensial dummy, loading state, error messages
-- **Katalog Produk** — grid responsif dari DummyJSON API (20 produk per halaman)
-- **Pencarian** — debounced real-time search via endpoint DummyJSON
-- **Filter Kategori** — berdasarkan kategori nyata dari API
-- **Paginasi** — navigasi halaman yang konsisten
-- **Detail Produk** — modal dengan gambar, deskripsi, rating, stok
-- **Loading / Error / Empty State** — semua kondisi ditangani dengan baik
-- **Image Fallback** — gambar gagal load ditangani dengan placeholder
-- **Logout** — membersihkan session
+Frontend akan otomatis mendeteksi dan menggunakan backend ini kalau jalan di port 8000.
 
 ---
 
-## Teknologi & Tools
+## Hal yang perlu diketahui
 
-| Teknologi | Versi | Alasan Pemilihan |
-|-----------|-------|-----------------|
-| React.js | 19 | Framework utama sesuai requirement |
-| Vite | 8 | Build tool yang cepat, konfigurasi minimal |
-| React Router DOM | 7 | Routing SPA (login → dashboard → 404) |
-| CSS + CSS Variables | — | Kontrol penuh tanpa framework tambahan |
-| Fetch API | bawaan | Tidak perlu library HTTP tambahan |
-| ESLint | 10 | Menjaga kualitas dan konsistensi kode |
-
----
-
-## Arsitektur & Struktur Folder
-
-```
-src/
-├── components/          # Komponen UI yang dapat digunakan kembali
-│   ├── Navbar.jsx       # Header + tombol logout
-│   ├── ProductCard.jsx  # Kartu satu produk
-│   ├── ProductGrid.jsx  # Grid daftar produk
-│   ├── ProductModal.jsx # Modal detail produk
-│   ├── ProtectedRoute.jsx # Guard untuk halaman terproteksi
-│   ├── SearchBar.jsx    # Input pencarian dengan debounce
-│   └── StatusMessage.jsx # Loading / error / empty state
-│
-├── contexts/
-│   └── AuthContext.jsx  # State autentikasi global (token, user, login, logout)
-│
-├── hooks/
-│   └── useProducts.js   # Logika fetch produk (state, pagination, filter, search)
-│
-├── layouts/
-│   └── DashboardLayout.jsx # Wrapper Navbar + konten
-│
-├── pages/
-│   ├── LoginPage.jsx    # Halaman login
-│   ├── DashboardPage.jsx # Halaman katalog produk
-│   └── NotFoundPage.jsx # Halaman 404
-│
-├── services/
-│   ├── apiClient.js     # HTTP client berbasis Fetch API
-│   ├── authService.js   # Fungsi login / logout
-│   └── productService.js # Fungsi fetch data dari DummyJSON
-│
-└── utils/
-    └── formatCurrency.js # Format harga ke USD
-```
-
-### Prinsip Pemisahan Tanggung Jawab
-
-- **Components** → hanya menangani tampilan dan interaksi
-- **Pages** → menyusun komponen menjadi halaman lengkap
-- **Services** → semua komunikasi dengan API (tidak ada `fetch` di komponen)
-- **Hooks** → logika stateful yang bisa digunakan kembali
-- **Utils** → fungsi murni tanpa side effect
-
----
-
-## Alur Login
-
-1. User memasukkan email + password → validasi format di frontend
-2. `authService.login()` dipanggil
-3. Token disimpan di React Context (in-memory, tidak ke localStorage)
-4. React Router redirect ke dashboard
-
-> **Catatan keamanan:** Token tidak disimpan di `localStorage` untuk menghindari risiko XSS.
-
----
-
-## API DummyJSON yang Digunakan
-
-| Endpoint | Kegunaan |
-|----------|----------|
-| `GET /products?limit=20&skip=N` | Daftar produk dengan paginasi |
-| `GET /products/search?q=query` | Pencarian produk |
-| `GET /products/categories` | Daftar kategori |
-| `GET /products/category/:slug` | Produk per kategori |
-
----
-
-## Environment Variable
-
-```env
-# producthub/.env
-VITE_API_BASE_URL=http://localhost:8000
-```
-
-File `.env` ini hanya diperlukan jika menggunakan backend opsional (lihat di bawah).
-Tanpa backend, aplikasi tetap berjalan dengan dummy authentication.
-
----
-
-## Backend Opsional (Laravel)
-
-Backend Laravel tersedia di folder `producthub-backend/` sebagai pengembangan tambahan.
-Menyediakan autentikasi nyata via MySQL + Laravel Sanctum.
-
-Lihat `producthub-backend/README.md` untuk instruksi setup.
-Login akan otomatis menggunakan backend jika tersedia di `http://localhost:8000`.
-
----
-
-## Keterbatasan
-
-- Token hilang saat refresh halaman (disengaja — tidak disimpan di localStorage)
-- Data produk hanya-baca dari DummyJSON (tidak ada CRUD)
-- Tidak ada registrasi; hanya akun demo
+- **Token hilang saat refresh** — ini perilaku yang disengaja
+- **Tidak ada registrasi** — cukup akun demo untuk keperluan demonstrasi
+- **Data produk read-only** — tidak ada fitur tambah/edit/hapus
+- **CORS** dikonfigurasi untuk localhost saja
