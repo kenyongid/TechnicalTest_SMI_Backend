@@ -1,175 +1,167 @@
 # ProductHub
 
-Aplikasi katalog produk berbasis React + Laravel, dibuat untuk coding test **Front-End Engineer SMI**.
+Aplikasi katalog produk sederhana yang dibangun sebagai coding test **Front-End Engineer**.
 
-## Fitur yang Diimplementasikan
+Pengguna harus login terlebih dahulu sebelum dapat mengakses katalog produk yang diambil dari [DummyJSON API](https://dummyjson.com).
 
-- **Login** — form dengan validasi frontend dan backend, pesan error yang jelas, loading state
-- **Autentikasi** — Laravel Sanctum token API, token disimpan di React state (bukan localStorage)
-- **Logout** — token dicabut di backend, state dibersihkan
-- **Proteksi halaman** — dashboard hanya bisa diakses setelah login
-- **Katalog produk** — grid responsif dari DummyJSON API
-- **Pencarian** — debounced search via endpoint DummyJSON
-- **Filter kategori** — berdasarkan kategori nyata dari API
-- **Paginasi** — navigasi halaman yang konsisten
-- **Detail produk** — modal dengan gambar, deskripsi, rating, stok
-- **Image fallback** — gambar gagal load ditangani dengan placeholder
-- **Loading / Error / Empty state** — semua kondisi ditangani
+---
 
-## Teknologi
-
-| Layer | Teknologi | Alasan |
-|---|---|---|
-| Frontend | React 19 + Vite | Modern, cepat, sesuai requirement |
-| Routing | React Router DOM | Diperlukan untuk navigasi login/dashboard/404 |
-| HTTP | Fetch API (bawaan) | Tidak perlu library tambahan |
-| Styling | CSS biasa + CSS Variables | Kontrol penuh tanpa framework |
-| Backend | Laravel 10 | Ekosistem PHP yang familiar |
-| Auth | Laravel Sanctum (token) | Sederhana untuk SPA terpisah |
-| Database | MySQL 8 | Sesuai requirement |
-
-## Persyaratan
-
-- Node.js ≥ 18
-- npm ≥ 9
-- PHP 8.1
-- Composer 2
-- MySQL 8
-
-## Cara Menjalankan — Frontend
-
-```bash
-cd producthub
-
-# Install dependency
-npm install
-
-# Buat file environment
-cp .env.example .env
-# Edit .env: pastikan VITE_API_BASE_URL=http://localhost:8000
-
-# Jalankan dev server
-npm run dev
-# → Buka http://localhost:5173
-```
-
-## Cara Menjalankan — Backend
-
-```bash
-cd producthub-backend
-
-# Install dependency
-composer install
-
-# Buat file environment
-cp .env.example .env
-# Edit .env: isi DB_PASSWORD sesuai MySQL lokal Anda
-
-# Generate app key
-php artisan key:generate
-
-# Jalankan server
-php artisan serve
-# → Berjalan di http://localhost:8000
-```
-
-## Setup Database
-
-```bash
-# Buat database
-mysql -u root -e "CREATE DATABASE producthub CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-
-# Jalankan migration
-php artisan migrate
-
-# Jalankan seeder (membuat akun demo)
-php artisan db:seed
-```
-
-## Konfigurasi Environment Variable
-
-### Frontend (`producthub/.env`)
-```env
-VITE_API_BASE_URL=http://localhost:8000
-```
-
-### Backend (`producthub-backend/.env`)
-```env
-APP_NAME=ProductHub
-APP_URL=http://localhost:8000
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=producthub
-DB_USERNAME=root
-DB_PASSWORD=          # isi sesuai MySQL lokal
-```
-
-## Kredensial Demo
-
-Dibuat oleh `UserSeeder`, tersimpan di database dengan password bcrypt:
+## Demo
 
 | Field    | Value                  |
 |----------|------------------------|
 | Email    | `demo@producthub.test` |
 | Password | `Demo@1234`            |
 
-## Endpoint API Backend
+---
 
-| Method | Path | Auth | Deskripsi |
-|--------|------|------|-----------|
-| POST | `/api/login` | Tidak | Login, kembalikan token |
-| POST | `/api/logout` | Bearer token | Cabut token aktif |
-| GET | `/api/me` | Bearer token | Data user yang login |
+## Cara Menjalankan
 
-## Arsitektur
+Hanya memerlukan Node.js. **Tidak perlu backend atau database.**
 
-```
-[Browser: localhost:5173]
-    ↕ React Router (SPA)
-[Frontend React]
-    ↕ Fetch API + Authorization: Bearer token
-[Backend Laravel: localhost:8000]
-    ↕ Sanctum Token Auth + MySQL
-[Database: producthub]
+```bash
+# 1. Clone repository
+git clone <url-repo>
+cd producthub
 
-[Frontend React]
-    ↕ Fetch API (public)
-[DummyJSON: dummyjson.com]
+# 2. Install dependency
+npm install
+
+# 3. Jalankan dev server
+npm run dev
+
+# 4. Buka di browser
+# http://localhost:5173
 ```
 
-### Struktur Frontend
+### Build untuk production
+
+```bash
+npm run build
+npm run preview
+```
+
+---
+
+## Fitur
+
+- **Login** — validasi frontend dengan kredensial dummy, loading state, error messages
+- **Katalog Produk** — grid responsif dari DummyJSON API (20 produk per halaman)
+- **Pencarian** — debounced real-time search via endpoint DummyJSON
+- **Filter Kategori** — berdasarkan kategori nyata dari API
+- **Paginasi** — navigasi halaman yang konsisten
+- **Detail Produk** — modal dengan gambar, deskripsi, rating, stok
+- **Loading / Error / Empty State** — semua kondisi ditangani dengan baik
+- **Image Fallback** — gambar gagal load ditangani dengan placeholder
+- **Logout** — membersihkan session
+
+---
+
+## Teknologi & Tools
+
+| Teknologi | Versi | Alasan Pemilihan |
+|-----------|-------|-----------------|
+| React.js | 19 | Framework utama sesuai requirement |
+| Vite | 8 | Build tool yang cepat, konfigurasi minimal |
+| React Router DOM | 7 | Routing SPA (login → dashboard → 404) |
+| CSS + CSS Variables | — | Kontrol penuh tanpa framework tambahan |
+| Fetch API | bawaan | Tidak perlu library HTTP tambahan |
+| ESLint | 10 | Menjaga kualitas dan konsistensi kode |
+
+---
+
+## Arsitektur & Struktur Folder
 
 ```
 src/
-├── components/    # UI reusable (Card, Grid, Modal, SearchBar, dll)
-├── contexts/      # AuthContext — state autentikasi global
-├── hooks/         # useProducts — logika fetch produk
-├── layouts/       # DashboardLayout — wrapper Navbar + main
-├── pages/         # LoginPage, DashboardPage, NotFoundPage
-├── services/      # apiClient, authService, productService
-└── utils/         # formatCurrency
+├── components/          # Komponen UI yang dapat digunakan kembali
+│   ├── Navbar.jsx       # Header + tombol logout
+│   ├── ProductCard.jsx  # Kartu satu produk
+│   ├── ProductGrid.jsx  # Grid daftar produk
+│   ├── ProductModal.jsx # Modal detail produk
+│   ├── ProtectedRoute.jsx # Guard untuk halaman terproteksi
+│   ├── SearchBar.jsx    # Input pencarian dengan debounce
+│   └── StatusMessage.jsx # Loading / error / empty state
+│
+├── contexts/
+│   └── AuthContext.jsx  # State autentikasi global (token, user, login, logout)
+│
+├── hooks/
+│   └── useProducts.js   # Logika fetch produk (state, pagination, filter, search)
+│
+├── layouts/
+│   └── DashboardLayout.jsx # Wrapper Navbar + konten
+│
+├── pages/
+│   ├── LoginPage.jsx    # Halaman login
+│   ├── DashboardPage.jsx # Halaman katalog produk
+│   └── NotFoundPage.jsx # Halaman 404
+│
+├── services/
+│   ├── apiClient.js     # HTTP client berbasis Fetch API
+│   ├── authService.js   # Fungsi login / logout
+│   └── productService.js # Fungsi fetch data dari DummyJSON
+│
+└── utils/
+    └── formatCurrency.js # Format harga ke USD
 ```
 
-### Alur Login
+### Prinsip Pemisahan Tanggung Jawab
 
-1. User isi form → frontend validasi (email format, field kosong)
-2. `authService.login()` kirim POST ke `/api/login`
-3. Backend validasi via `LoginRequest`, cek credentials via `Auth::attempt()`
-4. Jika cocok → buat Sanctum token, kembalikan `{ token, user }`
-5. Token disimpan di `AuthContext` (React state, in-memory)
-6. React Router redirect ke dashboard
+- **Components** → hanya menangani tampilan dan interaksi
+- **Pages** → menyusun komponen menjadi halaman lengkap
+- **Services** → semua komunikasi dengan API (tidak ada `fetch` di komponen)
+- **Hooks** → logika stateful yang bisa digunakan kembali
+- **Utils** → fungsi murni tanpa side effect
 
-### Alur Logout
+---
 
-1. User klik Logout → `AuthContext.logout()`
-2. POST ke `/api/logout` dengan `Authorization: Bearer {token}`
-3. Backend cabut token via `currentAccessToken()->delete()`
-4. State React dibersihkan → redirect ke login
+## Alur Login
+
+1. User memasukkan email + password → validasi format di frontend
+2. `authService.login()` dipanggil
+3. Token disimpan di React Context (in-memory, tidak ke localStorage)
+4. React Router redirect ke dashboard
+
+> **Catatan keamanan:** Token tidak disimpan di `localStorage` untuk menghindari risiko XSS.
+
+---
+
+## API DummyJSON yang Digunakan
+
+| Endpoint | Kegunaan |
+|----------|----------|
+| `GET /products?limit=20&skip=N` | Daftar produk dengan paginasi |
+| `GET /products/search?q=query` | Pencarian produk |
+| `GET /products/categories` | Daftar kategori |
+| `GET /products/category/:slug` | Produk per kategori |
+
+---
+
+## Environment Variable
+
+```env
+# producthub/.env
+VITE_API_BASE_URL=http://localhost:8000
+```
+
+File `.env` ini hanya diperlukan jika menggunakan backend opsional (lihat di bawah).
+Tanpa backend, aplikasi tetap berjalan dengan dummy authentication.
+
+---
+
+## Backend Opsional (Laravel)
+
+Backend Laravel tersedia di folder `producthub-backend/` sebagai pengembangan tambahan.
+Menyediakan autentikasi nyata via MySQL + Laravel Sanctum.
+
+Lihat `producthub-backend/README.md` untuk instruksi setup.
+Login akan otomatis menggunakan backend jika tersedia di `http://localhost:8000`.
+
+---
 
 ## Keterbatasan
 
-- Token tidak persisten: refresh halaman akan logout (disengaja, sesuai brief keamanan)
-- Tidak ada registrasi publik (hanya akun demo via seeder)
-- Tidak ada fitur CRUD produk (data hanya-baca dari DummyJSON)
-- CORS dikonfigurasi untuk localhost saja (perlu diubah untuk production)
+- Token hilang saat refresh halaman (disengaja — tidak disimpan di localStorage)
+- Data produk hanya-baca dari DummyJSON (tidak ada CRUD)
+- Tidak ada registrasi; hanya akun demo

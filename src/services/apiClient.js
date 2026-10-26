@@ -35,7 +35,10 @@ async function request(path, options = {}, token = null) {
       headers,
     });
   } catch {
-    throw new Error('Tidak dapat menghubungi server. Periksa koneksi internet Anda.');
+    // Tandai sebagai network error agar authService bisa fallback ke dummy login
+    const networkError = new Error('Tidak dapat menghubungi server. Periksa koneksi internet Anda.');
+    networkError.isNetworkError = true;
+    throw networkError;
   }
 
   // Coba parse JSON terlepas dari status code
