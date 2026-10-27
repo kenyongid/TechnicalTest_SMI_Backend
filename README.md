@@ -32,9 +32,9 @@ Aplikasi ini menampilkan katalog produk dari [DummyJSON](https://dummyjson.com) 
 
 | Teknologi | Versi | Kegunaan |
 |-----------|-------|----------|
-| PHP | 8.1 | Bahasa pemrograman |
-| Laravel | 10 | Framework backend |
-| Laravel Sanctum | 3.3 | Autentikasi berbasis token |
+| PHP | 8.2 | Bahasa pemrograman |
+| Laravel | 12 | Framework backend |
+| Laravel Sanctum | 4 | Autentikasi berbasis token |
 | MySQL | 8 | Database produk dan pengguna |
 | PHPUnit | 10 | Unit testing endpoint API |
 
