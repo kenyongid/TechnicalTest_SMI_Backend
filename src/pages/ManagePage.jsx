@@ -9,6 +9,7 @@
  */
 
 import { useState } from 'react';
+import Swal from 'sweetalert2';
 import DashboardLayout from '../layouts/DashboardLayout.jsx';
 import ProductForm from '../components/ProductForm.jsx';
 import StatusMessage from '../components/StatusMessage.jsx';
@@ -27,14 +28,42 @@ function StatCard({ label, value, accent }) {
 
 // ── Satu baris produk di tabel ──────────────────────────────────────────
 function ProductRow({ product, onEdit, onDelete }) {
-  const [confirming, setConfirming] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   async function handleDelete() {
-    if (!confirming) { setConfirming(true); return; }
-    setDeleting(true);
-    try { await onDelete(product.id); }
-    finally { setDeleting(false); setConfirming(false); }
+    const result = await Swal.fire({
+      title: 'Hapus Produk?',
+      text: `Apakah Anda yakin ingin menghapus "${product.name}"? Data yang dihapus tidak dapat dikembalikan.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Ya, Hapus!',
+      cancelButtonText: 'Batal',
+      reverseButtons: true,
+    });
+
+    if (result.isConfirmed) {
+      setDeleting(true);
+      try {
+        await onDelete(product.id);
+        Swal.fire({
+          icon: 'success',
+          title: 'Berhasil Dihapus!',
+          text: `Produk "${product.name}" berhasil dihapus.`,
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      } catch (err) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal Menghapus',
+          text: err.message || 'Terjadi kesalahan saat menghapus produk.',
+        });
+      } finally {
+        setDeleting(false);
+      }
+    }
   }
 
   return (
@@ -61,18 +90,12 @@ function ProductRow({ product, onEdit, onDelete }) {
         </button>
         <button
           type="button"
-          className={`btn btn--sm ${confirming ? 'btn--danger-confirm' : 'btn--danger-ghost'}`}
+          className="btn btn--sm btn--danger-ghost"
           onClick={handleDelete}
           disabled={deleting}
         >
-          {deleting ? 'Menghapus...' : confirming ? 'Yakin hapus?' : 'Hapus'}
+          {deleting ? 'Menghapus...' : 'Hapus'}
         </button>
-        {confirming && !deleting && (
-          <button type="button" className="btn btn--ghost btn--sm"
-            onClick={() => setConfirming(false)}>
-            Batal
-          </button>
-        )}
       </td>
     </tr>
   );

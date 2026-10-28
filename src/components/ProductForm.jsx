@@ -6,6 +6,7 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
+import Swal from 'sweetalert2';
 import { useAuth } from '../contexts/AuthContext.jsx';
 import { createProduct, updateProduct } from '../services/backendProductService.js';
 
@@ -86,6 +87,13 @@ export default function ProductForm({ product, onClose, onSaved }) {
         await createProduct(payload, token);
       }
       onSaved();
+      Swal.fire({
+        icon: 'success',
+        title: 'Berhasil!',
+        text: isEdit ? 'Produk berhasil diperbarui.' : 'Produk berhasil ditambahkan.',
+        timer: 2000,
+        showConfirmButton: false,
+      });
     } catch (err) {
       if (err.errors) {
         const mapped = {};
@@ -95,6 +103,11 @@ export default function ProductForm({ product, onClose, onSaved }) {
         setErrors(mapped);
       } else {
         setGeneralError(err.message);
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal Menyimpan',
+          text: err.message || 'Terjadi kesalahan saat menyimpan produk.',
+        });
       }
     } finally {
       setLoading(false);

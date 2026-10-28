@@ -31,14 +31,16 @@ export default function Navbar() {
             >
               Katalog
             </NavLink>
-            <NavLink
-              to="/manage"
-              className={({ isActive }) =>
-                `nav-link ${isActive ? 'nav-link--active' : ''}`
-              }
-            >
-              Kelola Produk
-            </NavLink>
+            {user?.role === 'admin' && (
+              <NavLink
+                to="/manage"
+                className={({ isActive }) =>
+                  `nav-link ${isActive ? 'nav-link--active' : ''}`
+                }
+              >
+                Kelola Produk
+              </NavLink>
+            )}
           </nav>
         </div>
 

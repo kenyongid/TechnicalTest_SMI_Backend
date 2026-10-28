@@ -18,7 +18,12 @@ const DEMO_ACCOUNTS = [
   {
     email: 'demo@producthub.test',
     password: 'Demo@1234',
-    user: { id: 1, name: 'Demo User', email: 'demo@producthub.test' },
+    user: { id: 1, name: 'Demo Admin', email: 'demo@producthub.test', role: 'admin' },
+  },
+  {
+    email: 'user@producthub.test',
+    password: 'User@1234',
+    user: { id: 2, name: 'Demo User', email: 'user@producthub.test', role: 'user' },
   },
 ];
 

@@ -23,7 +23,9 @@ export default function App() {
             <ProtectedRoute><DashboardPage /></ProtectedRoute>
           } />
           <Route path="/manage" element={
-            <ProtectedRoute><ManagePage /></ProtectedRoute>
+            <ProtectedRoute requiredRole="admin">
+              <ManagePage />
+            </ProtectedRoute>
           } />
 
           {/* 404 */}
